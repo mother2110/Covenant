@@ -5,6 +5,10 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+using Newtonsoft.Json;
 using Microsoft.CodeAnalysis;
 
 using Covenant.Core;
@@ -23,40 +27,64 @@ namespace Covenant.Models.Launchers
         PowerShell,
         Binary,
         MSBuild,
-        InstallUtil
+        InstallUtil,
+        ShellCode
     }
 
     public class Launcher
     {
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-
         public int ListenerId { get; set; }
-
-        public string Name { get; set; } = "GenericLauncher";
-        public string Description { get; set; } = "A generic launcher.";
-
-        public Common.DotNetVersion DotNetFrameworkVersion { get; set; } = Common.DotNetVersion.Net35;
-        public LauncherType Type { get; set; }
-
         public int ImplantTemplateId { get; set; }
 
-        public bool ValidateCert { get; set; } = true;
-        public bool UseCertPinning { get; set; } = true;
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public LauncherType Type { get; set; } = LauncherType.Binary;
+        public Common.DotNetVersion DotNetVersion { get; set; } = Common.DotNetVersion.Net35;
+
+        // .NET Core options
+        public Compiler.RuntimeIdentifier RuntimeIdentifier { get; set; } = Compiler.RuntimeIdentifier.win_x64;
+
+        // Http Options
+        public bool ValidateCert { get; set; } = false;
+        public bool UseCertPinning { get; set; } = false;
+
+        // Smb Options
         public string SMBPipeName { get; set; } = "gruntsvc";
 
         public int Delay { get; set; } = 5;
         public int JitterPercent { get; set; } = 10;
         public int ConnectAttempts { get; set; } = 5000;
-        public DateTime KillDate { get; set; } = new DateTime(2020, 12, 31);
-
+        public DateTime KillDate { get; set; } = DateTime.Now.AddDays(30);
         public string LauncherString { get; set; } = "";
         public string StagerCode { get; set; } = "";
-        public string Base64ILByteString { get; set; } = "";
 
-        public virtual string GetLauncher(Listener listener, Grunt grunt, HttpProfile profile, ImplantTemplate template) { return ""; }
+        [NotMapped, JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+        public string Base64ILByteString
+        {
+            get
+            {
+                try
+                {
+                    return Convert.ToBase64String(System.IO.File.ReadAllBytes(Common.CovenantLauncherDirectory + Name));
+                }
+                catch
+                {
+                    return "";
+                }
+            }
+            set
+            {
+                System.IO.File.WriteAllBytes(Common.CovenantLauncherDirectory + Name, Convert.FromBase64String(value)); 
+            }
+        }
+
+        public virtual string GetLauncher(string StagerCode, byte[] StagerAssembly, Grunt grunt, ImplantTemplate template) { return ""; }
         public virtual string GetHostedLauncher(Listener listener, HostedFile hostedFile) { return ""; }
 
-        protected OutputKind OutputKind { get; set; } = OutputKind.DynamicallyLinkedLibrary;
+        public OutputKind OutputKind { get; set; } = OutputKind.DynamicallyLinkedLibrary;
+        public bool CompressStager { get; set; } = false;
     }
 
     public abstract class DiskLauncher : Launcher
@@ -85,13 +113,13 @@ namespace Covenant.Models.Launchers
 
         protected ScriptletType ScriptType { get; set; } = ScriptletType.Scriptlet;
 
-        public override string GetLauncher(Listener listener, Grunt grunt, HttpProfile profile, ImplantTemplate template)
+        public override string GetLauncher(string StagerCode, byte[] StagerAssembly, Grunt grunt, ImplantTemplate template)
         {
-            this.StagerCode = listener.GetGruntStagerCode(grunt, profile, template);
-            this.Base64ILByteString = listener.CompileGruntStagerCode(grunt, profile, template, this.OutputKind, false);
+            this.StagerCode = StagerCode;
+            this.Base64ILByteString = Convert.ToBase64String(StagerAssembly);
 
             // Credit DotNetToJscript (tyranid - James Forshaw)
-            byte[] serializedDelegate = Convert.FromBase64String(FrontBinaryFormattedDelegate).Concat(Convert.FromBase64String(this.Base64ILByteString)).Concat(Convert.FromBase64String(EndBinaryFormattedDelegate)).ToArray();
+            byte[] serializedDelegate = Convert.FromBase64String(FrontBinaryFormattedDelegate).Concat(StagerAssembly).Concat(Convert.FromBase64String(EndBinaryFormattedDelegate)).ToArray();
             int ofs = serializedDelegate.Length % 3;
             if (ofs != 0)
             {
@@ -148,18 +176,18 @@ namespace Covenant.Models.Launchers
                 this.DiskCode = DiskCode.Replace("{{REPLACE_SCRIPT}}", code);
             }
 
-            if (this.DotNetFrameworkVersion == Common.DotNetVersion.Net35)
+            if (this.DotNetVersion == Common.DotNetVersion.Net35)
             {
                 this.DiskCode = this.DiskCode.Replace("{{REPLACE_VERSION_SETTER}}", "");
             }
-            else if (this.DotNetFrameworkVersion == Common.DotNetVersion.Net40)
+            else if (this.DotNetVersion == Common.DotNetVersion.Net40)
             {
                 this.DiskCode = this.DiskCode.Replace("{{REPLACE_VERSION_SETTER}}", JScriptNet40VersionSetter);
             }
-            return GetLauncher(this.DiskCode);
+            return GetLauncher();
         }
 
-        protected abstract String GetLauncher(String code);
+        protected abstract string GetLauncher();
 
         // Super ghetto - BinaryFormatter cannot seralize a Delegate in dotnet core. Instead, using a
         // raw, previously binary-formatted Delegate created in dotnet framework, and replacing the assembly bytes.

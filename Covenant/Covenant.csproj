@@ -1,114 +1,58 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+    <Configurations>Release;Debug</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <LangVersion>7.1</LangVersion>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <LangVersion>7.1</LangVersion>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Data\Grunt\**" />
-    <Compile Remove="Data\Tasks\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpSploit\SharpSploit\LateralMovement\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpSploit\SharpSploit\Credentials\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpSploit\SharpSploit\Enumeration\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpSploit\SharpSploit\Execution\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpSploit\SharpSploit\Generic\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpSploit\SharpSploit\Misc\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpSploit\SharpSploit.Tests\SharpSploit.Tests\LateralMovement\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpSploit\SharpSploit.Tests\SharpSploit.Tests\Credentials\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpSploit\SharpSploit.Tests\SharpSploit.Tests\Enumeration\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpSploit\SharpSploit.Tests\SharpSploit.Tests\Execution\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpSploit\SharpSploit.Tests\SharpSploit.Tests\Properties\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\Rubeus\Rubeus\lib\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\Rubeus\Rubeus\lib\krb_structures\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\Rubeus\Rubeus\Asn1\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\Rubeus\Rubeus\Commands\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\Rubeus\Rubeus\Domain\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\Rubeus\Rubeus\Properties\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\Rubeus\Rubeus\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpDPAPI\SharpDPAPI\Commands\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpDPAPI\SharpDPAPI\Domain\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpDPAPI\SharpDPAPI\lib\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpDPAPI\SharpDPAPI\Properties\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpDPAPI\SharpDPAPI\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpUp\SharpUp\Properties\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpUp\SharpUp\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SafetyKatz\SafetyKatz\Properties\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SafetyKatz\SafetyKatz\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\Seatbelt\Seatbelt\Properties\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\Seatbelt\Seatbelt\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpDump\SharpDump\Properties\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpDump\SharpDump\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpWMI\SharpWMI\Properties\*" />
-    <Compile Remove="Data\ReferenceSourceLibraries\SharpWMI\SharpWMI\*" />
+    <Compile Remove="Data\Tasks\**" />
+    <Compile Remove="Data\ReferenceSourceLibraries\**" />
+    <Compile Remove="Data\Downloads\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Data\Grunt\*" />
-    <None Include="wwwroot\css\bootstrap-datetimepicker.css" />
-    <None Include="wwwroot\css\bootstrap-datetimepicker.min.css" />
-    <None Include="wwwroot\js\bootstrap-datetimepicker.min.js" />
-    <None Include="wwwroot\js\bootstrap-datetimepicker.js" />
+    <None Remove="Data\Grunt\**" />
+    <None Remove="Data\Tasks\CSharp\**" />
+    <None Remove="Data\Downloads\**" />
+    <None Remove="Data\Temp\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\" />
-    <Folder Include="Data\Tasks\" />
-    <Folder Include="Models\Indicators\" />
-    <Folder Include="Views\" />
-    <Folder Include="Views\Grunt\" />
-    <Folder Include="Views\Shared\" />
-    <Folder Include="Views\Indicator\" />
-    <Folder Include="Views\Launcher\" />
-    <Folder Include="Views\Listener\" />
-    <Folder Include="Views\Credential\" />
-    <Folder Include="Views\CovenantUser\" />
-    <Folder Include="Hubs\" />
-    <Folder Include="Controllers\ApiControllers\" />
-    <Folder Include="Controllers\ListenerControllers\" />
-    <Folder Include="Controllers\ViewControllers\" />
-    <Folder Include="Views\Home\" />
-    <Folder Include="wwwroot\images\" />
-    <Folder Include="Views\GruntTask\" />
-    <Folder Include="Views\GruntTasking\" />
-    <Folder Include="Views\Data\" />
-    <Folder Include="Views\ReferenceSourceLibrary\" />
-    <Folder Include="Views\ReferenceAssembly\" />
-    <Folder Include="Views\EmbeddedResource\" />
-    <Folder Include="Views\HostedFile\" />
-    <Folder Include="Views\Profile\" />
-    <Folder Include="Views\Graph\" />
-    <Folder Include="Views\Template\" />
-    <Folder Include="Data\Tasks\CSharp\" />
-    <Folder Include="Data\Tasks\CSharp\Compiled\" />
-    <Folder Include="wwwroot\webfonts\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.App">
-      <PrivateAssets Condition="'%(PackageReference.Version)' == ''">all</PrivateAssets>
-      <Publish Condition="'%(PackageReference.Version)' == ''">true</Publish>
-    </PackageReference>
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.5.2" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="1.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.3" />
-    <PackageReference Include="YamlDotNet" Version="5.1.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.1.0-preview1-final" />
+    <PackageReference Include="BlazorInputFile" Version="0.1.0-preview-00002" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="3.1.0-preview2.19528.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="3.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="3.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="3.1.3" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="5.3.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="5.3.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="5.3.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.4" />
+    <PackageReference Include="YamlDotNet" Version="8.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.4" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.1.3" />
+    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="3.1.4" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.5.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.4" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -138,9 +82,11 @@
     <Reference Include="dnlib">
       <HintPath>refs\dnlib.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Data\covenant.db-journal" />
-    <None Remove="Data\covenant.db" />
+    <Reference Include="PeNet">
+      <HintPath>refs\PeNet.dll</HintPath>
+    </Reference>
+    <Reference Include="Donut">
+      <HintPath>refs\Donut.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

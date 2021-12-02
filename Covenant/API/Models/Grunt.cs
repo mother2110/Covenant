@@ -25,28 +25,33 @@ namespace Covenant.API.Models
         /// <summary>
         /// Initializes a new instance of the Grunt class.
         /// </summary>
-        /// <param name="commType">Possible values include: 'HTTP',
-        /// 'SMB'</param>
-        /// <param name="dotNetFrameworkVersion">Possible values include:
-        /// 'Net40', 'Net35', 'NetCore21'</param>
+        /// <param name="dotNetVersion">Possible values include: 'Net35',
+        /// 'Net40', 'NetCore31'</param>
+        /// <param name="runtimeIdentifier">Possible values include: 'win_x64',
+        /// 'win_x86', 'win_arm', 'win_arm64', 'win7_x64', 'win7_x86',
+        /// 'win81_x64', 'win81_x86', 'win81_arm', 'win10_x64', 'win10_x86',
+        /// 'win10_arm', 'win10_arm64', 'linux_x64', 'linux_musl_x64',
+        /// 'linux_arm', 'linux_arm64', 'rhel_x64', 'rhel_6_x64', 'tizen',
+        /// 'tizen_4_0_0', 'tizen_5_0_0', 'osx_x64', 'osx_10_10_x64',
+        /// 'osx_10_11_x64', 'osx_10_12_x64', 'osx_10_13_x64', 'osx_10_14_x64',
+        /// 'osx_10_15_x64'</param>
         /// <param name="status">Possible values include: 'Uninitialized',
-        /// 'Stage0', 'Stage1', 'Stage2', 'Active', 'Lost', 'Killed',
-        /// 'Disconnected'</param>
+        /// 'Stage0', 'Stage1', 'Stage2', 'Active', 'Lost', 'Exited',
+        /// 'Disconnected', 'Hidden'</param>
         /// <param name="integrity">Possible values include: 'Untrusted',
         /// 'Low', 'Medium', 'High', 'System'</param>
-        /// <param name="language">Possible values include: 'CSharp'</param>
-        public Grunt(string name, string originalServerGuid, CommunicationType commType, bool validateCert, bool useCertPinning, string smbPipeName, int delay, int jitterPercent, int connectAttempts, System.DateTime killDate, DotNetVersion dotNetFrameworkVersion, GruntStatus status, IntegrityLevel integrity, int? id = default(int?), string guid = default(string), IList<string> children = default(IList<string>), ImplantLanguage? language = default(ImplantLanguage?), int? listenerId = default(int?), Listener listener = default(Listener), string note = default(string), string process = default(string), string userDomainName = default(string), string userName = default(string), string ipAddress = default(string), string hostname = default(string), string operatingSystem = default(string), string gruntSharedSecretPassword = default(string), string gruntRSAPublicKey = default(string), string gruntNegotiatedSessionKey = default(string), string gruntChallenge = default(string), System.DateTime? activationTime = default(System.DateTime?), System.DateTime? lastCheckIn = default(System.DateTime?), string powerShellImport = default(string), IList<GruntCommand> gruntCommands = default(IList<GruntCommand>))
+        public Grunt(string name, string originalServerGuid, int implantTemplateId, bool validateCert, bool useCertPinning, string smbPipeName, int delay, int jitterPercent, int connectAttempts, System.DateTime killDate, DotNetVersion dotNetVersion, RuntimeIdentifier runtimeIdentifier, GruntStatus status, IntegrityLevel integrity, int? id = default(int?), string guid = default(string), IList<string> children = default(IList<string>), ImplantTemplate implantTemplate = default(ImplantTemplate), int? listenerId = default(int?), Listener listener = default(Listener), string note = default(string), string process = default(string), string userDomainName = default(string), string userName = default(string), string ipAddress = default(string), string hostname = default(string), string operatingSystem = default(string), string gruntSharedSecretPassword = default(string), string gruntRSAPublicKey = default(string), string gruntNegotiatedSessionKey = default(string), string gruntChallenge = default(string), System.DateTime? activationTime = default(System.DateTime?), System.DateTime? lastCheckIn = default(System.DateTime?), string powerShellImport = default(string), IList<GruntCommand> gruntCommands = default(IList<GruntCommand>))
         {
             Id = id;
             Name = name;
             OriginalServerGuid = originalServerGuid;
             Guid = guid;
             Children = children;
-            CommType = commType;
+            ImplantTemplateId = implantTemplateId;
+            ImplantTemplate = implantTemplate;
             ValidateCert = validateCert;
             UseCertPinning = useCertPinning;
             SmbPipeName = smbPipeName;
-            Language = language;
             ListenerId = listenerId;
             Listener = listener;
             Note = note;
@@ -54,7 +59,8 @@ namespace Covenant.API.Models
             JitterPercent = jitterPercent;
             ConnectAttempts = connectAttempts;
             KillDate = killDate;
-            DotNetFrameworkVersion = dotNetFrameworkVersion;
+            DotNetVersion = dotNetVersion;
+            RuntimeIdentifier = runtimeIdentifier;
             Status = status;
             Integrity = integrity;
             Process = process;
@@ -105,10 +111,14 @@ namespace Covenant.API.Models
         public IList<string> Children { get; set; }
 
         /// <summary>
-        /// Gets or sets possible values include: 'HTTP', 'SMB'
         /// </summary>
-        [JsonProperty(PropertyName = "commType")]
-        public CommunicationType CommType { get; set; }
+        [JsonProperty(PropertyName = "implantTemplateId")]
+        public int ImplantTemplateId { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "implantTemplate")]
+        public ImplantTemplate ImplantTemplate { get; set; }
 
         /// <summary>
         /// </summary>
@@ -124,12 +134,6 @@ namespace Covenant.API.Models
         /// </summary>
         [JsonProperty(PropertyName = "smbPipeName")]
         public string SmbPipeName { get; set; }
-
-        /// <summary>
-        /// Gets or sets possible values include: 'CSharp'
-        /// </summary>
-        [JsonProperty(PropertyName = "language")]
-        public ImplantLanguage? Language { get; set; }
 
         /// <summary>
         /// </summary>
@@ -167,14 +171,27 @@ namespace Covenant.API.Models
         public System.DateTime KillDate { get; set; }
 
         /// <summary>
-        /// Gets or sets possible values include: 'Net40', 'Net35', 'NetCore21'
+        /// Gets or sets possible values include: 'Net35', 'Net40', 'NetCore31'
         /// </summary>
-        [JsonProperty(PropertyName = "dotNetFrameworkVersion")]
-        public DotNetVersion DotNetFrameworkVersion { get; set; }
+        [JsonProperty(PropertyName = "dotNetVersion")]
+        public DotNetVersion DotNetVersion { get; set; }
+
+        /// <summary>
+        /// Gets or sets possible values include: 'win_x64', 'win_x86',
+        /// 'win_arm', 'win_arm64', 'win7_x64', 'win7_x86', 'win81_x64',
+        /// 'win81_x86', 'win81_arm', 'win10_x64', 'win10_x86', 'win10_arm',
+        /// 'win10_arm64', 'linux_x64', 'linux_musl_x64', 'linux_arm',
+        /// 'linux_arm64', 'rhel_x64', 'rhel_6_x64', 'tizen', 'tizen_4_0_0',
+        /// 'tizen_5_0_0', 'osx_x64', 'osx_10_10_x64', 'osx_10_11_x64',
+        /// 'osx_10_12_x64', 'osx_10_13_x64', 'osx_10_14_x64', 'osx_10_15_x64'
+        /// </summary>
+        [JsonProperty(PropertyName = "runtimeIdentifier")]
+        public RuntimeIdentifier RuntimeIdentifier { get; set; }
 
         /// <summary>
         /// Gets or sets possible values include: 'Uninitialized', 'Stage0',
-        /// 'Stage1', 'Stage2', 'Active', 'Lost', 'Killed', 'Disconnected'
+        /// 'Stage1', 'Stage2', 'Active', 'Lost', 'Exited', 'Disconnected',
+        /// 'Hidden'
         /// </summary>
         [JsonProperty(PropertyName = "status")]
         public GruntStatus Status { get; set; }

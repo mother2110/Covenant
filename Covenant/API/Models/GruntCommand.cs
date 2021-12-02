@@ -23,18 +23,18 @@ namespace Covenant.API.Models
         /// <summary>
         /// Initializes a new instance of the GruntCommand class.
         /// </summary>
-        public GruntCommand(string command, System.DateTime commandTime, CovenantUser user, int? id = default(int?), int? commandOutputId = default(int?), CommandOutput commandOutput = default(CommandOutput), int? gruntId = default(int?), Grunt grunt = default(Grunt), int? gruntTaskingId = default(int?), GruntTasking gruntTasking = default(GruntTasking))
+        public GruntCommand(string command, System.DateTime commandTime, int commandOutputId, string userId, int? id = default(int?), CommandOutput commandOutput = default(CommandOutput), CovenantUser user = default(CovenantUser), int? gruntTaskingId = default(int?), GruntTasking gruntTasking = default(GruntTasking), int? gruntId = default(int?))
         {
             Id = id;
             Command = command;
             CommandTime = commandTime;
             CommandOutputId = commandOutputId;
             CommandOutput = commandOutput;
+            UserId = userId;
             User = user;
-            GruntId = gruntId;
-            Grunt = grunt;
             GruntTaskingId = gruntTaskingId;
             GruntTasking = gruntTasking;
+            GruntId = gruntId;
             CustomInit();
         }
 
@@ -61,7 +61,7 @@ namespace Covenant.API.Models
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "commandOutputId")]
-        public int? CommandOutputId { get; set; }
+        public int CommandOutputId { get; set; }
 
         /// <summary>
         /// </summary>
@@ -70,18 +70,13 @@ namespace Covenant.API.Models
 
         /// <summary>
         /// </summary>
+        [JsonProperty(PropertyName = "userId")]
+        public string UserId { get; set; }
+
+        /// <summary>
+        /// </summary>
         [JsonProperty(PropertyName = "user")]
         public CovenantUser User { get; set; }
-
-        /// <summary>
-        /// </summary>
-        [JsonProperty(PropertyName = "gruntId")]
-        public int? GruntId { get; set; }
-
-        /// <summary>
-        /// </summary>
-        [JsonProperty(PropertyName = "grunt")]
-        public Grunt Grunt { get; set; }
 
         /// <summary>
         /// </summary>
@@ -92,6 +87,11 @@ namespace Covenant.API.Models
         /// </summary>
         [JsonProperty(PropertyName = "gruntTasking")]
         public GruntTasking GruntTasking { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "gruntId")]
+        public int? GruntId { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -105,17 +105,17 @@ namespace Covenant.API.Models
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "Command");
             }
-            if (User == null)
+            if (UserId == null)
             {
-                throw new ValidationException(ValidationRules.CannotBeNull, "User");
+                throw new ValidationException(ValidationRules.CannotBeNull, "UserId");
             }
             if (CommandOutput != null)
             {
                 CommandOutput.Validate();
             }
-            if (Grunt != null)
+            if (User != null)
             {
-                Grunt.Validate();
+                User.Validate();
             }
             if (GruntTasking != null)
             {

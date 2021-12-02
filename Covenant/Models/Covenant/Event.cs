@@ -21,7 +21,8 @@ namespace Covenant.Models.Covenant
     public enum EventType
     {
         Normal,
-        Download
+        Download,
+        Screenshot
     }
 
     public class Event
@@ -54,22 +55,37 @@ namespace Covenant.Models.Covenant
 
         public bool WriteToDisk()
         {
-            byte[] contents = Convert.FromBase64String(this.FileContents);
-            if (this.Progress == DownloadProgress.Complete)
+            try
             {
-                File.WriteAllBytes(
-                    Path.Combine(Common.CovenantDownloadDirectory, this.FileName),
-                    contents
-                );
-            }
-            else
-            {
-                using (var stream = new FileStream(Path.Combine(Common.CovenantDownloadDirectory, this.FileName), FileMode.Append))
+                byte[] contents = Convert.FromBase64String(this.FileContents);
+                if (this.Progress == DownloadProgress.Complete)
                 {
-                    stream.Write(contents, 0, contents.Length);
+                    File.WriteAllBytes(
+                        Path.Combine(Common.CovenantDownloadDirectory, Utilities.GetSanitizedFilename(this.FileName)),
+                        contents
+                    );
                 }
+                else
+                {
+                    using (var stream = new FileStream(Path.Combine(Common.CovenantDownloadDirectory, Utilities.GetSanitizedFilename(this.FileName)), FileMode.Append))
+                    {
+                        stream.Write(contents, 0, contents.Length);
+                    }
+                }
+                return true;
             }
-            return true;
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+    }
+
+    public class ScreenshotEvent : DownloadEvent
+    {
+        public ScreenshotEvent()
+        {
+            this.Type = EventType.Screenshot;
         }
     }
 }

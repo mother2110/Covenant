@@ -19,35 +19,24 @@ using Covenant.Models.Listeners;
 
 namespace Covenant.Hubs
 {
-    public static class GruntHubProxy
-    {
-        public async static Task SendCommandEvent(IHubContext<GruntHub> context, Event taskingEvent, GruntCommand command)
-        {
-            await context.Clients.Group(taskingEvent.Context)
-                .SendAsync("ReceiveCommandEvent", command, taskingEvent);
-        }
-    }
-
     [Authorize]
     public class GruntHub : Hub
     {
-        private readonly CovenantContext _context;
-        private readonly Interaction interact;
+        private readonly ICovenantService _service;
 
-        public GruntHub(CovenantContext context, IHubContext<GruntHub> grunthub, IHubContext<EventHub> eventhub)
+        public GruntHub(ICovenantService service)
         {
-            _context = context;
-            interact = new Interaction(_context, grunthub, eventhub);
+            _service = service;
         }
 
-        public async Task JoinGroup(string gruntName)
+        public async Task JoinGroup(string groupname)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, gruntName);
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupname);
         }
 
         public async Task GetGrunts()
         {
-            List<Grunt> grunts = (await _context.GetGrunts()).Where(G => G.Status != GruntStatus.Uninitialized).ToList();
+            List<Grunt> grunts = (await _service.GetGrunts()).Where(G => G.Status != GruntStatus.Uninitialized).ToList();
             foreach (Grunt g in grunts)
             {
                 await this.Clients.Caller.SendAsync("ReceiveGrunt", g.GUID, g.Name);
@@ -56,7 +45,7 @@ namespace Covenant.Hubs
 
         public async Task GetListeners()
         {
-            List<Listener> listeners = (await _context.GetListeners()).Where(L => L.Status == ListenerStatus.Active).ToList();
+            List<Listener> listeners = (await _service.GetListeners()).Where(L => L.Status == ListenerStatus.Active).ToList();
             foreach (Listener l in listeners)
             {
                 await this.Clients.Caller.SendAsync("ReceiveListener", l.GUID, l.Name);
@@ -65,12 +54,12 @@ namespace Covenant.Hubs
 
         public async Task GetGruntLinks()
         {
-            List<Grunt> grunts = (await _context.GetGrunts()).Where(G => G.Status != GruntStatus.Uninitialized && G.Children.Any()).ToList();
+            List<Grunt> grunts = (await _service.GetGrunts()).Where(G => G.Status != GruntStatus.Uninitialized && G.Children.Any()).ToList();
             foreach (Grunt g in grunts)
             {
                 foreach (string child in g.Children)
                 {
-                    Grunt childGrunt = await _context.GetGruntByGUID(child);
+                    Grunt childGrunt = await _service.GetGruntByGUID(child);
                     await this.Clients.Caller.SendAsync("ReceiveGruntLink", g.GUID, childGrunt.GUID);
                 }
             }
@@ -78,23 +67,23 @@ namespace Covenant.Hubs
 
         public async Task GetGruntListenerLinks()
         {
-            IEnumerable<Grunt> allGrunts = await _context.GetGrunts();
-            List<Grunt> grunts = (await _context.GetGrunts())
+            IEnumerable<Grunt> allGrunts = await _service.GetGrunts();
+            List<Grunt> grunts = (await _service.GetGrunts())
                 .Where(G => G.Status != GruntStatus.Uninitialized)
                 .Where(G => !allGrunts.Any(AG => AG.Children.Contains(G.GUID)))
                 .ToList();
             foreach (Grunt g in grunts)
             {
-                Listener l = await _context.GetListener(g.ListenerId);
+                Listener l = await _service.GetListener(g.ListenerId);
                 await this.Clients.Caller.SendAsync("ReceiveGruntListenerLink", l.GUID, g.GUID);
             }
         }
 
         public async Task GetInteract(string gruntName, string input)
         {
-            CovenantUser user = await _context.GetUserByUsername(this.Context.User.Identity.Name);
-            Grunt grunt = await _context.GetGruntByName(gruntName);
-            GruntCommand command = await interact.Input(user, grunt, input);
+            CovenantUser user = await _service.GetUser(this.Context.UserIdentifier);
+            Grunt grunt = await _service.GetGruntByName(gruntName);
+            GruntCommand command = await _service.InteractGrunt(grunt.Id, user.Id, input);
             if (!string.IsNullOrWhiteSpace(command.CommandOutput.Output))
             {
                 await this.Clients.Caller.SendAsync("ReceiveCommandOutput", command);
@@ -103,13 +92,10 @@ namespace Covenant.Hubs
 
         public async Task GetCommandOutput(int id)
         {
-            GruntCommand command = await _context.GruntCommands
-                .Where(GC => GC.Id == id)
-                .Include(GC => GC.User)
-                .Include(GC => GC.CommandOutput)
-                .Include(GC => GC.GruntTasking)
-                    .ThenInclude(GC => GC.GruntTask)
-                .FirstOrDefaultAsync();
+            GruntCommand command = await _service.GetGruntCommand(id);
+            command.CommandOutput ??= await _service.GetCommandOutput(command.CommandOutputId);
+            command.User ??= await _service.GetUser(command.UserId);
+            command.GruntTasking ??= await _service.GetGruntTasking(command.GruntTaskingId ?? default);
             if (!string.IsNullOrWhiteSpace(command.CommandOutput.Output))
             {
                 await this.Clients.Caller.SendAsync("ReceiveCommandOutput", command);
@@ -118,8 +104,8 @@ namespace Covenant.Hubs
 
         public async Task GetSuggestions(string gruntName)
         {
-            CovenantUser user = await _context.GetUserByUsername(this.Context.User.Identity.Name);
-            List<string> suggestions = await interact.GetSuggestions(gruntName);
+            Grunt grunt = await _service.GetGruntByName(gruntName);
+            List<string> suggestions = await _service.GetCommandSuggestionsForGrunt(grunt);
             await this.Clients.Caller.SendAsync("ReceiveSuggestions", suggestions);
         }
     }

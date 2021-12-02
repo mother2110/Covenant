@@ -23,6 +23,7 @@ namespace Covenant.Models.Grunts
 
         [Required]
         public int GruntCommandId { get; set; }
+        [JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
         public GruntCommand GruntCommand { get; set; }
     }
 
@@ -34,18 +35,20 @@ namespace Covenant.Models.Grunts
         public string Command { get; set; }
         [Required]
         public DateTime CommandTime { get; set; } = DateTime.MinValue;
-
+        [Required]
         public int CommandOutputId { get; set; }
         public CommandOutput CommandOutput { get; set; }
 
         [Required]
+        public string UserId { get; set; }
         public CovenantUser User { get; set; }
 
-        public int GruntId { get; set; }
-        public Grunt Grunt { get; set; }
-
-        public int? GruntTaskingId { get; set; }
+        public int? GruntTaskingId { get; set; } = null;
         public GruntTasking GruntTasking { get; set; }
+
+        public int GruntId { get; set; }
+        [JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+        public Grunt Grunt { get; set; }
     }
 
     public enum GruntTaskingStatus
@@ -63,18 +66,12 @@ namespace Covenant.Models.Grunts
         SetDelay,
         SetJitter,
         SetConnectAttempts,
-        Kill,
+        SetKillDate,
+        Exit,
         Connect,
         Disconnect,
-        Jobs
-    }
-
-    public class GruntTaskingMessage
-    {
-        public GruntTaskingType Type { get; set; }
-        public string Name { get; set; }
-        public string Message { get; set; }
-        public bool Token { get; set; }
+        Tasks,
+        TaskKill
     }
 
     public class GruntTasking
@@ -86,19 +83,19 @@ namespace Covenant.Models.Grunts
         [Required]
         public int GruntId { get; set; }
         public Grunt Grunt { get; set; }
+        [Required]
         public int GruntTaskId { get; set; }
         public GruntTask GruntTask { get; set; }
 
         public GruntTaskingType Type { get; set; } = GruntTaskingType.Assembly;
         public List<string> Parameters { get; set; } = new List<string>();
 
-        [Required]
-        public int GruntCommandId { get; set; }
-        public GruntCommand GruntCommand { get; set; }
-
         public GruntTaskingStatus Status { get; set; } = GruntTaskingStatus.Uninitialized;
-
         public DateTime TaskingTime { get; set; } = DateTime.MinValue;
         public DateTime CompletionTime { get; set; } = DateTime.MinValue;
+
+        public int GruntCommandId { get; set; }
+        [JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+        public GruntCommand GruntCommand { get; set; }
     }
 }

@@ -4,7 +4,6 @@
 
 using System;
 using System.IO;
-using System.Net;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
@@ -12,7 +11,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Newtonsoft.Json;
-using Microsoft.CodeAnalysis;
 
 using Covenant.Core;
 using Covenant.Models.Grunts;
@@ -26,13 +24,7 @@ namespace Covenant.Models.Listeners
         public string Name { get; set; }
         public string Description { get; set; }
 
-        public static ListenerType HttpListenerType { get; set; } = new ListenerType
-        {
-            Name = "HTTP",
-            Description = "Listens on HTTP protocol."
-        };
-
-        [JsonIgnore]
+        [JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
         public List<Listener> Listeners { get; set; }
     }
 
@@ -58,7 +50,7 @@ namespace Covenant.Models.Listeners
         [Required, Range(1, 65535)]
         public int BindPort { get; set; } = 80;
         [Required]
-        public string ConnectAddress { get; set; }
+        public List<string> ConnectAddresses { get; set; } = new List<string>();
         [Required, Range(1, 65535)]
         public int ConnectPort { get; set; } = 80;
         [Required]
@@ -71,34 +63,19 @@ namespace Covenant.Models.Listeners
 
         [Required]
         public ListenerStatus Status { get; set; } = ListenerStatus.Uninitialized;
+        public string CovenantUrl { get; set; }
         public string CovenantToken { get; set; }
 
         public DateTime StartTime { get; set; } = DateTime.MinValue;
 
         public virtual CancellationTokenSource Start() { return null; }
         public virtual void Stop(CancellationTokenSource cancellationTokenSource) { }
-        public virtual string GetGruntStagerCode(Grunt grunt, HttpProfile profile, ImplantTemplate template) { return ""; }
 
         protected string ListenerDirectory { get { return Common.CovenantListenersDirectory + this.GUID + Path.DirectorySeparatorChar; } }
+    }
 
-        public string CompileGruntStagerCode(Grunt grunt, HttpProfile profile, ImplantTemplate template, OutputKind outputKind = OutputKind.DynamicallyLinkedLibrary, bool Compress = false)
-        {
-            byte[] ILBytes = Compiler.Compile(new Compiler.CompilationRequest
-            {
-                Language = grunt.Language,
-                Source = this.GetGruntStagerCode(grunt, profile, template),
-                TargetDotNetVersion = grunt.DotNetFrameworkVersion,
-                OutputKind = outputKind,
-                References = grunt.DotNetFrameworkVersion == Common.DotNetVersion.Net35 ? Common.DefaultNet35References : Common.DefaultNet40References
-            });
-            if (ILBytes == null || ILBytes.Length == 0)
-            {
-                throw new CovenantCompileGruntStagerFailedException("Compiling Grunt code failed");
-            }
-            if (Compress) {
-                ILBytes = Utilities.Compress(ILBytes);
-            }
-            return Convert.ToBase64String(ILBytes);
-        }
+    public class ListenerStartException : Exception
+    {
+        public ListenerStartException(string message) : base(message) { }
     }
 }

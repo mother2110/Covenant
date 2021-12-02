@@ -3,7 +3,6 @@
 // License: GNU GPLv3
 
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -14,12 +13,6 @@ using Covenant.Models.Listeners;
 
 namespace Covenant.Models.Grunts
 {
-    public enum CommunicationType
-    {
-        HTTP,
-        SMB
-    }
-
     public enum GruntStatus
     {
         Uninitialized,
@@ -28,7 +21,7 @@ namespace Covenant.Models.Grunts
         Stage2,
         Active,
         Lost,
-        Killed,
+        Exited,
         Disconnected,
         Hidden
     }
@@ -40,90 +33,6 @@ namespace Covenant.Models.Grunts
         Medium,
         High,
         System
-    }
-
-    public enum ImplantLanguage
-    {
-        CSharp
-        // C++,
-        // C,
-        // PowerShell,
-        // Python,
-        // Swift,
-        // ObjectiveC
-    }
-
-    public class ImplantTemplate
-    {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
-
-        public string Name { get; set; } = "";
-        public string Description { get; set; }
-        public ImplantLanguage Language { get; set; }
-        public CommunicationType CommType { get; set; }
-
-        public string StagerCode { get; set; }
-		public string ExecutorCode { get; set; }
-
-		private string StagerLocation
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(this.Name))
-                {
-                    return "";
-                }
-                string dir = Common.CovenantDataDirectory + "Grunt" + Path.DirectorySeparatorChar + Utilities.GetSanitizedFilename(this.Name) + Path.DirectorySeparatorChar;
-                string file = Utilities.GetSanitizedFilename(this.Name) + "Stager" + Utilities.GetExtensionForLanguage(this.Language);
-                if (!Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                if (!File.Exists(dir + file))
-                {
-                    var fs = File.Create(dir + file);
-                    fs.Close();
-                }
-                return dir + file;
-            }
-        }
-
-        private string ExecutorLocation
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(this.Name))
-                {
-                    return "";
-                }
-                string dir = Common.CovenantDataDirectory + "Grunt" + Path.DirectorySeparatorChar + Utilities.GetSanitizedFilename(this.Name) + Path.DirectorySeparatorChar;
-                string file = Utilities.GetSanitizedFilename(this.Name) + Utilities.GetExtensionForLanguage(this.Language);
-                if (!Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                if (!File.Exists(dir + file))
-                {
-                    var fs = File.Create(dir + file);
-                    fs.Close();
-                }
-                return dir + file;
-            }
-        }
-
-		public void ReadFromDisk()
-		{
-			if (!string.IsNullOrEmpty(this.StagerLocation) && File.Exists(this.StagerLocation))
-			{
-				this.StagerCode = File.ReadAllText(this.StagerLocation);
-			}
-
-			if (!string.IsNullOrEmpty(this.ExecutorLocation) && File.Exists(this.ExecutorLocation))
-			{
-				this.ExecutorCode = File.ReadAllText(this.ExecutorLocation);
-			}
-		}
     }
 
     public class Grunt
@@ -143,14 +52,14 @@ namespace Covenant.Models.Grunts
 
         // Communication information
         [Required]
-        public CommunicationType CommType { get; set; } = CommunicationType.HTTP;
+        public int ImplantTemplateId { get; set; }
+        public ImplantTemplate ImplantTemplate { get; set; }
         [Required]
         public bool ValidateCert { get; set; } = true;
         [Required]
         public bool UseCertPinning { get; set; } = true;
         [Required, DisplayName("SMBPipeName")]
         public string SMBPipeName { get; set; } = "gruntsvc";
-        public ImplantLanguage Language { get; set; } = ImplantLanguage.CSharp;
 
         // Information about the Listener
         public int ListenerId { get; set; }
@@ -169,7 +78,9 @@ namespace Covenant.Models.Grunts
 
         // Attributes of the remote Grunt
         [Required]
-        public Common.DotNetVersion DotNetFrameworkVersion { get; set; } = Common.DotNetVersion.Net35;
+        public Common.DotNetVersion DotNetVersion { get; set; } = Common.DotNetVersion.Net35;
+        [Required]
+        public Compiler.RuntimeIdentifier RuntimeIdentifier { get; set; } = Compiler.RuntimeIdentifier.win_x64;
         [Required]
         public GruntStatus Status { get; set; } = GruntStatus.Uninitialized;
         [Required]

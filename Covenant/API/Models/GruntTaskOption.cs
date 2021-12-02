@@ -24,17 +24,18 @@ namespace Covenant.API.Models
         /// <summary>
         /// Initializes a new instance of the GruntTaskOption class.
         /// </summary>
-        public GruntTaskOption(int? id = default(int?), string name = default(string), string value = default(string), string description = default(string), IList<string> suggestedValues = default(IList<string>), bool? optional = default(bool?), bool? displayInCommand = default(bool?), int? gruntTaskId = default(int?), GruntTask task = default(GruntTask))
+        public GruntTaskOption(int? id = default(int?), string name = default(string), string value = default(string), string defaultValue = default(string), string description = default(string), IList<string> suggestedValues = default(IList<string>), bool? optional = default(bool?), bool? displayInCommand = default(bool?), bool? fileOption = default(bool?), int? gruntTaskId = default(int?))
         {
             Id = id;
             Name = name;
             Value = value;
+            DefaultValue = defaultValue;
             Description = description;
             SuggestedValues = suggestedValues;
             Optional = optional;
             DisplayInCommand = displayInCommand;
+            FileOption = fileOption;
             GruntTaskId = gruntTaskId;
-            Task = task;
             CustomInit();
         }
 
@@ -60,6 +61,11 @@ namespace Covenant.API.Models
 
         /// <summary>
         /// </summary>
+        [JsonProperty(PropertyName = "defaultValue")]
+        public string DefaultValue { get; set; }
+
+        /// <summary>
+        /// </summary>
         [JsonProperty(PropertyName = "description")]
         public string Description { get; set; }
 
@@ -80,26 +86,13 @@ namespace Covenant.API.Models
 
         /// <summary>
         /// </summary>
+        [JsonProperty(PropertyName = "fileOption")]
+        public bool? FileOption { get; set; }
+
+        /// <summary>
+        /// </summary>
         [JsonProperty(PropertyName = "gruntTaskId")]
         public int? GruntTaskId { get; set; }
 
-        /// <summary>
-        /// </summary>
-        [JsonProperty(PropertyName = "task")]
-        public GruntTask Task { get; set; }
-
-        /// <summary>
-        /// Validate the object.
-        /// </summary>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown if validation fails
-        /// </exception>
-        public virtual void Validate()
-        {
-            if (Task != null)
-            {
-                Task.Validate();
-            }
-        }
     }
 }
